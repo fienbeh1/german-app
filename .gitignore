@@ -50,3 +50,4 @@ nohup.out
 .vscode/
 .idea/
 *.sublime-*
+backend/server.err

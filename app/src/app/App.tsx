@@ -11,7 +11,6 @@ import {
   PanelRightOpen, PanelRightClose, Sidebar as SidebarIcon
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'motion/react'
-import { useEffect } from 'react'
 import { useAppState } from './hooks/useAppState'
 import { DashboardView } from './views/DashboardView'
 import { LessonsView } from './views/LessonsView'
@@ -34,10 +33,6 @@ import { Seitendetails } from './components/Seitendetails'
 export default function App() {
   const appState = useAppState()
   const { audioRef, theme, setTheme, loading, currentView, setCurrentView, selectedBook, setSelectedBook, realBooks, bookSearch, setBookSearch, lessonData, currentPdfIndex, setCurrentPdfIndex, lektionen, searchQuery, setSearchQuery, verbSearch, setVerbSearch, chatOpen, setChatOpen, chatInput, setChatInput, chatMessages, chatLoading, sendChat, audioProgress, audioDuration, setAudioProgress, setAudioDuration, setIsPlaying, setPlayingAudio, backendOnline, errorMessage, setErrorMessage, infoPanelOpen, setInfoPanelOpen, pageDetail, setPageDetail, playingTrack, setPlayingTrack } = appState
-
-  useEffect(() => {
-    if (currentView !== 'lessons') setPageDetail(null)
-  }, [currentView])
 
   if (loading) {
     return (

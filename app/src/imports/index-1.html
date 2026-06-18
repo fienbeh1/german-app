@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DaF German Learning Platform</title>
+  <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-content">
+      <h1>🇩🇪 DaF German Learning Platform</h1>
+      <p>Interactive German learning with OCR, audio, and AI-powered exercises</p>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="books-section">
+      <h2>📚 Your Library</h2>
+      <div id="booksGrid" class="cards-grid"></div>
+    </section>
+
+    <section class="features-section">
+      <h2>✨ Features</h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">📖</div>
+          <h3>OCR Textbooks</h3>
+          <p>High-quality scanned pages with searchable German text</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🎧</div>
+          <h3>Audio Player</h3>
+          <p>Speed controls (0.5x-2x), transcripts, and track navigation</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🤖</div>
+          <h3>AI Annotations</h3>
+          <p>Automatic grammar, verb, and vocabulary extraction</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🎴</div>
+          <h3>Flashcards</h3>
+          <p>Interactive vocabulary cards with flip animation</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>DaF Platform — Local German Learning System</p>
+  </footer>
+
+  <script>
+    // Load books on page load
+    window.addEventListener('DOMContentLoaded', loadBooks);
+
+    async function loadBooks() {
+      try {
+        const res = await fetch('/api/books');
+        const books = await res.json();
+        renderBooks(books);
+      } catch (err) {
+        console.error('Failed to load books:', err);
+      }
+    }
+
+    function renderBooks(books) {
+      const grid = document.getElementById('booksGrid');
+      if (!books.length) {
+        grid.innerHTML = '<p>No books found in /de/ yet.</p>';
+        return;
+      }
+
+      grid.innerHTML = books.map(book => `
+        <div class="book-card" onclick="openBook('${encodeURIComponent(book.path)}')">
+          <div class="book-cover">
+            <div class="book-icon">📕</div>
+            <span class="page-count">${book.pdfCount} PDFs</span>
+          </div>
+          <div class="book-info">
+            <h3>${escapeHtml(book.name)}</h3>
+            <p>Last updated ${formatDate(book.modified)}</p>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function openBook(encodedPath) {
+      window.location.href = `/lesson.html?book=${encodedPath}`;
+    }
+
+    function formatDate(iso) {
+      if (!iso) return 'Unknown';
+      const date = new Date(iso);
+      if (Number.isNaN(date.getTime())) return 'Unknown';
+      return date.toLocaleDateString('de-DE', {
+        year: 'numeric',
+        month: 'short',
+        day: '2-digit'
+      });
+    }
+
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+  </script>
+</body>
+</html>

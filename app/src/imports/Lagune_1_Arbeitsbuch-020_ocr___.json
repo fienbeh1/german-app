@@ -1,0 +1,67 @@
+{
+  "struktur": {
+    "seite": "6",
+    "lektion": "Grammatik",
+    "abschnitt": "Ergänzen Sie sein, seine /ihr, ihre."
+  },
+  "audio": [
+    {
+      "anweisung": "Hören Sie das Gespräch",
+      "track": "1",
+      "cd": "1",
+      "typ": "Dialog",
+      "beschreibung_es": "Escuche la conversación"
+    }
+  ],
+  "inhaltstyp": [
+    "dialog",
+    "hörverstehen"
+  ],
+  "thema": {
+    "de": "Im Restaurant",
+    "es": "En el restaurante"
+  },
+  "grammatik": [
+    {
+      "name": "Modalverben",
+      "beschreibung": "können, müssen, dürfen",
+      "beispiele": [
+        "Ich kann Deutsch sprechen.",
+        "Er muss arbeiten."
+      ]
+    }
+  ],
+  "vokabular": [
+    {
+      "wort": "die Wohnung",
+      "artikel": "die",
+      "plural": "die Wohnungen",
+      "übersetzung_es": "apartamento, vivienda",
+      "wortart": "Substantiv",
+      "kontext": "Ich suche eine Wohnung."
+    },
+    {
+      "wort": "bestellen",
+      "übersetzung_es": "pedir, ordenar",
+      "wortart": "Verb",
+      "konjugationshinweise": "regelmäßig",
+      "kontext": "Was möchten Sie bestellen?"
+    }
+  ],
+  "übungen": [
+    {
+      "typ": "Lückentext",
+      "anweisung_de": "Ergänzen Sie die Modalverben.",
+      "anweisung_es": "Complete con los verbos modales.",
+      "schwierigkeit": "mittel"
+    }
+  ],
+  "zusammenfassung_es": "Esta página trata sobre... (máximo 3 oraciones)",
+  "metadata": {
+    "datei": "/home/f/deutsch-app/de/Lagune_1/Lagune 1/Arbeitsbuch + CD/txt/Lagune_1_Arbeitsbuch-020_ocr_%%.txt",
+    "verarbeitet": "2026-05-09T01:03:13.950425",
+    "buch": "Arbeitsbuch + CD",
+    "modell": "deutsch-gemma3-ib:latest",
+    "audio_detector_used": false
+  }
+}

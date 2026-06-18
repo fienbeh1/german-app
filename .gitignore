@@ -1,0 +1,52 @@
+node_modules/
+dist/
+.env
+.env.local
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.log
+*.out
+__pycache__/
+*.pyc
+.venv/
+venv/
+agentic/__pycache__/
+
+# Data / media (uploaded to Cloudinary)
+pages/
+data/
+delfin/
+natural_audio/
+parquet/
+archive/
+de/
+
+# Audio / images
+*.mp3
+*.wav
+*.ogg
+*.flac
+*.m4a
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.ico
+!app/public/icons/*.png
+!app/public/icons/*.ico
+
+# Generated / temporary
+*.tmp
+*.swp
+*.csv
+!app/public/verben.csv
+*.zip
+*.tar.gz
+nohup.out
+
+# IDE
+.vscode/
+.idea/
+*.sublime-*

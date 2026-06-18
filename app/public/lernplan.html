@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interaktiver Deutsch-Lernplan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .chart-container { position: relative; width: 100%; max-width: 400px; margin: 0 auto; height: 250px; max-height: 300px; }
+        @media (min-width: 768px) { .chart-container { height: 300px; } }
+        .accordion-content { transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out; max-height: 0; opacity: 0; overflow: hidden; }
+        .accordion-content.open { max-height: 500px; opacity: 1; }
+    </style>
+</head>
+<body class="bg-stone-50 text-stone-800 font-sans antialiased min-h-screen">
+    <div class="max-w-6xl mx-auto p-4 sm:p-8">
+        <header class="mb-10 text-center md:text-left border-b border-stone-200 pb-6">
+            <h1 class="text-4xl font-extrabold text-stone-900 tracking-tight">Mein Lern-Dashboard</h1>
+            <p class="text-lg text-stone-600 mt-2">Niveau B1/B2: Fokus auf fortgeschrittene Grammatikstrukturen</p>
+        </header>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-1 space-y-8">
+                <section class="bg-white p-6 rounded-2xl shadow-sm border border-stone-200">
+                    <h2 class="text-xl font-bold text-stone-800 mb-3">Zielsetzung</h2>
+                    <p class="text-sm text-stone-600 leading-relaxed mb-4">Dieser Bereich gibt dir einen schnellen Uberblick uber deine strategische Ausrichtung.</p>
+                    <div class="p-4 bg-stone-50 rounded-lg border border-stone-100 text-stone-700 text-sm">Wahrend die Grundlagen (A1-B1) sicher sitzen, werden das <strong>Passiv</strong> und der <strong>Konjunktiv II</strong> als nachste Meilensteine definiert, um das Niveau B2 zu erreichen.</div>
+                </section>
+                <section class="bg-white p-6 rounded-2xl shadow-sm border border-stone-200">
+                    <h2 class="text-xl font-bold text-stone-800 mb-3">Themenverteilung</h2>
+                    <p class="text-sm text-stone-600 leading-relaxed mb-6">Dieses Diagramm visualisiert die Gewichtung deiner aktuellen Lernthemen.</p>
+                    <div class="chart-container"><canvas id="focusChart"></canvas></div>
+                </section>
+            </div>
+            <div class="lg:col-span-2 space-y-6">
+                <section class="bg-white p-6 rounded-2xl shadow-sm border border-stone-200">
+                    <h2 class="text-2xl font-bold text-stone-800 mb-2">Schlusselkonzepte erkunden</h2>
+                    <p class="text-base text-stone-600 mb-6">Klicke auf die jeweiligen Themenblocke, um die Formeln und Beispiele einzublenden.</p>
+                    <div class="border border-indigo-100 rounded-xl mb-4 overflow-hidden shadow-sm">
+                        <button class="w-full text-left p-5 bg-indigo-50 hover:bg-indigo-100 transition-colors flex justify-between items-center text-indigo-900 focus:outline-none" onclick="toggleAccordion('passiv')">
+                            <span class="font-semibold text-lg">1. Vorgangspassiv (Prasens)</span>
+                            <span id="icon-passiv" class="text-xl font-mono transition-transform duration-300">+</span>
+                        </button>
+                        <div id="content-passiv" class="accordion-content bg-white">
+                            <div class="p-6 border-t border-indigo-50">
+                                <p class="text-stone-700 mb-4">Der Fokus liegt auf der <strong>Handlung</strong>, nicht auf dem Tater.</p>
+                                <div class="bg-stone-50 p-4 rounded-lg border border-stone-200 font-mono text-sm mb-4 inline-block shadow-inner"><span class="text-indigo-600 font-bold">Formel:</span> werden + Partizip II</div>
+                                <div class="pl-4 border-l-4 border-indigo-400"><p class="italic text-stone-800 text-lg">Der Kuchen wird gebacken.</p><p class="text-sm text-stone-500 mt-1">Im Gegensatz zum Aktiv: Mutter backt den Kuchen.</p></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="border border-violet-100 rounded-xl mb-4 overflow-hidden shadow-sm">
+                        <button class="w-full text-left p-5 bg-violet-50 hover:bg-violet-100 transition-colors flex justify-between items-center text-violet-900 focus:outline-none" onclick="toggleAccordion('konjunktiv')">
+                            <span class="font-semibold text-lg">2. Konjunktiv II</span>
+                            <span id="icon-konjunktiv" class="text-xl font-mono transition-transform duration-300">+</span>
+                        </button>
+                        <div id="content-konjunktiv" class="accordion-content bg-white">
+                            <div class="p-6 border-t border-violet-50">
+                                <p class="text-stone-700 mb-4">Wird fur <strong>Hoflichkeit, Wunsche</strong> oder <strong>irreale Situationen/Traume</strong> genutzt.</p>
+                                <div class="bg-stone-50 p-4 rounded-lg border border-stone-200 font-mono text-sm mb-4 inline-block shadow-inner"><span class="text-violet-600 font-bold">Formel:</span> wurde + Infinitiv</div>
+                                <div class="pl-4 border-l-4 border-violet-400"><p class="italic text-stone-800 text-lg">Ich wurde gerne reisen.</p></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="border border-stone-200 rounded-xl mb-4 overflow-hidden shadow-sm">
+                        <button class="w-full text-left p-5 bg-stone-100 hover:bg-stone-200 transition-colors flex justify-between items-center text-stone-800 focus:outline-none" onclick="toggleAccordion('relativ')">
+                            <span class="font-semibold text-lg">3. Adjektivdeklination & Relativsatze</span>
+                            <span id="icon-relativ" class="text-xl font-mono transition-transform duration-300">+</span>
+                        </button>
+                        <div id="content-relativ" class="accordion-content bg-white">
+                            <div class="p-6 border-t border-stone-200">
+                                <p class="text-stone-700 mb-4 text-sm uppercase tracking-wide font-semibold text-stone-500">Wiederholung</p>
+                                <p class="text-stone-700 mb-4">Relativpronomen richten sich immer nach dem <strong>Verb im Nebensatz</strong>.</p>
+                                <div class="pl-4 border-l-4 border-stone-400"><p class="italic text-stone-800 text-lg">Das ist der Mann, <strong>dem</strong> ich helfe.</p><p class="text-sm text-stone-500 mt-1">Erklarung: Das Verb helfen verlangt den Dativ.</p></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+    <script>
+        const chartData = { labels: ['Vorgangspassiv', 'Konjunktiv II', 'Relativsatze'], values: [40, 40, 20], colors: ['#818cf8', '#a78bfa', '#d1d5db'], hoverColors: ['#6366f1', '#8b5cf6', '#9ca3af'] };
+        const accordionState = { passiv: false, konjunktiv: false, relativ: false };
+        function toggleAccordion(s) { const c = document.getElementById('content-'+s); const i = document.getElementById('icon-'+s); accordionState[s] = !accordionState[s]; if(accordionState[s]){c.classList.add('open');i.textContent='-';i.style.transform='rotate(180deg)';}else{c.classList.remove('open');i.textContent='+';i.style.transform='rotate(0deg)';} }
+        document.addEventListener('DOMContentLoaded',()=>{new Chart(document.getElementById('focusChart').getContext('2d'),{type:'doughnut',data:{labels:chartData.labels,datasets:[{data:chartData.values,backgroundColor:chartData.colors,hoverBackgroundColor:chartData.hoverColors,borderWidth:2,borderColor:'#ffffff',hoverOffset:4}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{position:'bottom',labels:{padding:20,font:{family:'Inter, sans-serif',size:13},color:'#44403c'}},tooltip:{backgroundColor:'#1c1917',padding:12,cornerRadius:8,callbacks:{label:function(ctx){return ' Fokus: '+ctx.parsed+'%';}}}},animation:{animateScale:true,animateRotate:true}}});});
+    </script>
+</body>
+</html>

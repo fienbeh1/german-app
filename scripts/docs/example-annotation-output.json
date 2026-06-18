@@ -1,0 +1,161 @@
+{
+  "metadata": {
+    "file_path": "/home/f/deutsch-app/de/Schritte International 1/txt/Schritte_International_1_Kursbuch-page-12.txt",
+    "processed_date": "2026-05-09T12:30:00",
+    "book_series": "Schritte International",
+    "estimated_level": "A1"
+  },
+
+  "structure": {
+    "unit": "Lektion 2",
+    "page_number": "12",
+    "material_type": "Kursbuch",
+    "section_name": "Hörverständnis"
+  },
+
+  "audio_references": [
+    {
+      "instruction": "Hören Sie das Gespräch und kreuzen Sie an.",
+      "track_number": "12",
+      "cd_number": "1",
+      "audio_type": "Dialog",
+      "description": "Escuche la conversación y marque con una cruz."
+    },
+    {
+      "instruction": "Wiederholen Sie zusammen mit dem Band.",
+      "track_number": "13",
+      "cd_number": "1",
+      "audio_type": "Übung",
+      "description": "Repita junto con el audio."
+    }
+  ],
+
+  "content_classification": [
+    "listening_comprehension",
+    "dialog"
+  ],
+
+  "main_topic": "Im Café bestellen",
+  "main_topic_es": "Pedir en una cafetería",
+
+  "grammar_points": [
+    {
+      "name": "Modalverben: können, möchten",
+      "description": "Uso de verbos modales para expresar deseo y capacidad",
+      "examples": [
+        "Ich möchte einen Kaffee.",
+        "Können Sie mir helfen?",
+        "Möchten Sie etwas trinken?"
+      ]
+    },
+    {
+      "name": "Akkusativ mit unbestimmten Artikel",
+      "description": "Uso del acusativo con artículos indefinidos",
+      "examples": [
+        "Ich nehme einen Tee.",
+        "Sie bestellt eine Cola.",
+        "Wir möchten ein Wasser."
+      ]
+    }
+  ],
+
+  "vocabulary": [
+    {
+      "word": "der Kaffee",
+      "article": "der",
+      "plural": "die Kaffees",
+      "translation_es": "café",
+      "translation_en": "coffee",
+      "word_type": "Substantiv",
+      "context": "Ich möchte einen Kaffee, bitte."
+    },
+    {
+      "word": "bestellen",
+      "translation_es": "pedir, ordenar",
+      "translation_en": "to order",
+      "word_type": "Verb",
+      "conjugation_notes": "regelmäßig",
+      "context": "Was möchten Sie bestellen?"
+    },
+    {
+      "word": "die Speisekarte",
+      "article": "die",
+      "plural": "die Speisekarten",
+      "translation_es": "menú, carta",
+      "translation_en": "menu",
+      "word_type": "Substantiv",
+      "context": "Können Sie mir die Speisekarte bringen?"
+    },
+    {
+      "word": "zahlen",
+      "translation_es": "pagar",
+      "translation_en": "to pay",
+      "word_type": "Verb",
+      "conjugation_notes": "regelmäßig",
+      "context": "Ich möchte zahlen, bitte."
+    },
+    {
+      "word": "zusammen",
+      "translation_es": "juntos",
+      "translation_en": "together",
+      "word_type": "Adverb",
+      "context": "Möchten Sie zusammen oder getrennt zahlen?"
+    }
+  ],
+
+  "exercises": [
+    {
+      "number": "1",
+      "type": "Hörverstehen",
+      "instruction_de": "Hören Sie das Gespräch und kreuzen Sie an: richtig oder falsch?",
+      "instruction_es": "Escuche la conversación y marque: ¿verdadero o falso?",
+      "has_answer_key": true,
+      "difficulty": "leicht"
+    },
+    {
+      "number": "2",
+      "type": "Dialog",
+      "instruction_de": "Arbeiten Sie zu zweit. Spielen Sie den Dialog.",
+      "instruction_es": "Trabajen en parejas. Representen el diálogo.",
+      "has_answer_key": false,
+      "difficulty": "mittel"
+    }
+  ],
+
+  "translations": {
+    "instructions": [
+      {
+        "german": "Hören Sie das Gespräch und beantworten Sie die Fragen.",
+        "spanish": "Escuche la conversación y responda las preguntas.",
+        "english": "Listen to the conversation and answer the questions."
+      },
+      {
+        "german": "Wiederholen Sie zusammen mit dem Band.",
+        "spanish": "Repita junto con la grabación.",
+        "english": "Repeat along with the recording."
+      }
+    ],
+    "idioms": [
+      {
+        "expression": "Guten Appetit!",
+        "literal": "Buen apetito",
+        "meaning": "¡Que aproveche! / ¡Buen provecho!"
+      }
+    ]
+  },
+
+  "cultural_notes": [
+    "En Alemania es común pedir la cuenta diciendo 'Ich möchte zahlen' o 'Die Rechnung, bitte'",
+    "Es habitual preguntar si se paga junto (zusammen) o separado (getrennt)",
+    "El mesero generalmente pregunta '¿Zusammen oder getrennt?' antes de traer la cuenta"
+  ],
+
+  "study_tips": [
+    "Practica el audio varias veces para acostumbrarte a la velocidad natural del alemán",
+    "Memoriza las frases útiles del diálogo para usarlas en situaciones reales",
+    "Enfócate en la entonación al pedir algo ('Ich möchte...')",
+    "Repite los verbos modales en diferentes contextos para interiorizarlos"
+  ],
+
+  "summary_es": "Esta página presenta un diálogo en una cafetería donde se practica cómo hacer pedidos usando los verbos modales 'können' y 'möchten'. Los estudiantes escuchan el Track 12 del CD 1 y practican la comprensión auditiva marcando respuestas correctas. Se introduce vocabulario clave relacionado con comida, bebidas y el acto de pedir/pagar en un restaurante. Los ejercicios incluyen escuchar el diálogo original y luego practicar en parejas con el audio Track 13."
+}

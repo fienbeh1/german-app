@@ -1,0 +1,98 @@
+{
+  "lesson_id": "b2-lektion-1",
+  "course": "B2",
+  "lesson_number": 1,
+  "title": "Lektion 1: Wohnungssuche",
+  "description": "Búsqueda de vivienda, descripción de apartamentos",
+  "difficulty_level": "B2",
+  "estimated_duration_minutes": 120,
+
+  "content": {
+    "pdf_pages": 12,
+    "pdfs": [
+      { "page": 1, "file": "pdfs/page-001.pdf", "text": "text/page-001.txt" },
+      { "page": 2, "file": "pdfs/page-002.pdf", "text": "text/page-002.txt" },
+      { "page": 3, "file": "pdfs/page-003.pdf", "text": "text/page-003.txt" }
+    ],
+    "audio": [
+      {
+        "file": "audio/lektion-1-full.mp3",
+        "title": "Lección completa",
+        "duration_seconds": 1200,
+        "transcript": "text/audio-transcript.txt"
+      },
+      {
+        "file": "audio/dialog-1.mp3",
+        "title": "Dialog 1: Wohnungsbesichtigung",
+        "track_number": 12,
+        "duration_seconds": 180,
+        "referenced_on_page": 3
+      }
+    ],
+    "video": []
+  },
+
+  "learning_objectives": [
+    "Describir características de una vivienda",
+    "Usar vocabulario de habitaciones y muebles",
+    "Aplicar Modalverben (können, müssen, dürfen)"
+  ],
+
+  "topics": [
+    "Wohnungssuche",
+    "Wohnungsbeschreibung",
+    "Möbel und Einrichtung"
+  ],
+
+  "grammar_points": [
+    {
+      "name": "Modalverben",
+      "pages": [5, 6, 7],
+      "description": "können, müssen, dürfen, wollen, sollen, mögen"
+    },
+    {
+      "name": "Wechselpräpositionen",
+      "pages": [8, 9],
+      "description": "in, an, auf, über, unter (+ Akkusativ/Dativ)"
+    }
+  ],
+
+  "vocabulary_preview": [
+    { "word": "die Wohnung", "translation": "apartamento" },
+    { "word": "mieten", "translation": "alquilar" },
+    { "word": "der Vermieter", "translation": "arrendador" }
+  ],
+
+  "exercises": [
+    {
+      "page": 4,
+      "type": "Lückentext",
+      "description": "Completar diálogo con Modalverben"
+    },
+    {
+      "page": 10,
+      "type": "Hörverständnis",
+      "description": "Escuchar Track 12 y responder preguntas",
+      "audio_file": "audio/dialog-1.mp3"
+    }
+  ],
+
+  "ai_annotations": {
+    "generated": "2026-05-09T00:00:00Z",
+    "summary_file": "annotations/lesson-summary.json",
+    "vocabulary_file": "annotations/vocabulary.json",
+    "page_annotations": "annotations/page-*.json"
+  },
+
+  "user_notes": {
+    "notes_file": "notes.txt",
+    "last_modified": "2026-05-08T21:00:00Z"
+  },
+
+  "completion_tracking": {
+    "pages_completed": [],
+    "exercises_done": [],
+    "vocabulary_mastered": [],
+    "last_studied": null
+  }
+}

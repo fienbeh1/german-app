@@ -1,0 +1,211 @@
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 999px;
+  min-height: 40px;
+  border: 1px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
+  border: 1px solid transparent;
+  background-clip: content-box;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+[data-slot="scroll-area-scrollbar"][data-orientation="vertical"] {
+  display: flex !important;
+  opacity: 1 !important;
+  animation: none !important;
+  transition: none !important;
+}
+[data-slot="scroll-area-scrollbar"] [data-slot="scroll-area-thumb"] {
+  background: var(--border) !important;
+  min-height: 40px !important;
+  border-radius: 999px !important;
+}
+[data-slot="scroll-area-viewport"] {
+  overflow: auto !important;
+  overscroll-behavior: contain;
+}
+[data-slot="scroll-area-scrollbar"] {
+  animation: none !important;
+}
+[data-slot="scroll-area-scrollbar"]::before,
+[data-slot="scroll-area-scrollbar"]::after {
+  animation: none !important;
+}
+
+html {
+  height: 100%;
+}
+
+body, #root {
+  height: 100dvh;
+}
+
+body {
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+*[data-slot="scroll-area-viewport"] {
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+[data-slot="sheet-content"] {
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  overscroll-behavior: contain;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  [data-slot="scroll-area-viewport"] {
+    -webkit-overflow-scrolling: touch !important;
+    scroll-behavior: smooth !important;
+  }
+  .overflow-auto, .overflow-y-auto, [data-slot="scroll-area-viewport"], [data-slot="sheet-content"] {
+    -webkit-overflow-scrolling: touch !important;
+  }
+  button, a, [role="button"] {
+    min-height: 44px;
+  }
+  body {
+    -webkit-overflow-scrolling: touch !important;
+  }
+}
+
+[data-lesson-page] img {
+  max-width: 100% !important;
+  height: auto !important;
+  object-fit: contain;
+}
+
+@media (max-width: 768px) {
+  [data-lesson-page] {
+    padding: 0 !important;
+  }
+  [data-lesson-page] img {
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+  [data-lesson-sidebar] {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+.react-pdf__Document {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.react-pdf__Page {
+  max-width: 100%;
+  background-color: transparent !important;
+}
+
+.react-pdf__Page__canvas {
+  max-width: 100%;
+  height: auto !important;
+}
+
+audio {
+  width: 100%;
+  height: 32px;
+  outline: none;
+}
+
+video {
+  max-width: 100%;
+  border-radius: 0.5rem;
+  outline: none;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(16px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 rgba(5, 150, 105, 0); }
+  50% { box-shadow: 0 0 20px rgba(5, 150, 105, 0.15); }
+}
+
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(12px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.35s ease-out;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.25s ease-out;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.2s ease-out;
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(90deg, var(--muted) 25%, var(--border) 50%, var(--muted) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+.btn-icon-hover {
+  transition: all 0.15s ease;
+}
+.btn-icon-hover:hover {
+  transform: scale(1.1);
+}
+.btn-icon-hover:active {
+  transform: scale(0.95);
+}
+
+.card-hover {
+  transition: all 0.2s ease;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}

@@ -1,0 +1,45 @@
+# Deutsch App — Python dependencies
+# Install: pip install -r requirements.txt
+# Backend: cd backend && npm install (see backend/package.json)
+# Frontend: cd app && npm install (see app/package.json)
+# System: sudo apt install python3-tk
+
+# --- Core ML/NLP ---
+torch>=2.0.0
+torchvision
+easyocr
+
+# --- Data processing ---
+pandas>=2.0
+numpy
+pyarrow
+fastparquet
+
+# --- PDF / Document ---
+PyMuPDF
+Pillow
+
+# --- API / Web ---
+flask
+anthropic
+google-generativeai
+deep-translator
+requests
+httpx
+
+# --- Database ---
+psycopg2-binary
+sqlalchemy
+
+# --- Audio ---
+pydub
+speechrecognition
+whisper
+
+# --- OCR + Vision ---
+opencv-python-headless
+
+# --- Utilities ---
+tqdm
+python-dateutil
+pydantic

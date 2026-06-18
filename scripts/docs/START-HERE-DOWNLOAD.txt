@@ -1,0 +1,55 @@
+╔════════════════════════════════════════════════════════════╗
+║                                                            ║
+║        📥 DESCARGA TODO EL PAQUETE AQUÍ                   ║
+║                                                            ║
+╚════════════════════════════════════════════════════════════╝
+
+🎯 ARCHIVO LISTO:
+
+   Nombre: deutsch-app-sistema.tar.gz
+   Tamaño: 941 KB
+   Contiene: 70+ archivos (scripts + docs + frontend)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📥 CÓMO DESCARGAR:
+
+1. En la interfaz de Claude Code (navegador)
+   └─ Busca el PANEL DE ARCHIVOS (lado izquierdo)
+
+2. Localiza este archivo:
+   └─ deutsch-app-sistema.tar.gz
+
+3. Descarga:
+   └─ Clic derecho → "Download"
+   └─ O arrastra el archivo a tu escritorio
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔍 ¿NO VES EL PANEL DE ARCHIVOS?
+
+Busca estos elementos en la interfaz:
+   • Ícono de carpeta 📁
+   • Botón "Files" o "Explorer"
+   • Panel lateral izquierdo
+   • Menú "View" → "Explorer"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📦 DESPUÉS DE DESCARGAR:
+
+En tu terminal Ubuntu:
+
+   cd ~/Descargas
+   tar -xzf deutsch-app-sistema.tar.gz
+   cd deutsch-app-sistema
+   cat README.md
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🆘 ¿TODAVÍA NO PUEDES DESCARGAR?
+
+Avísame y te comparto los 4 archivos esenciales
+directamente en el chat para copiar/pegar.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

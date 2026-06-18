@@ -1,0 +1,754 @@
+import { useEffect, useRef, useState, useCallback } from 'react'
+import { ScrollArea } from '../components/ui/scroll-area'
+import { Button } from '../components/ui/button'
+import { Badge } from '../components/ui/badge'
+import { Input } from '../components/ui/input'
+import { api } from '../../lib/api'
+import {
+  ChevronRight, ChevronDown, ChevronUp, GraduationCap,
+  Headphones, FileText, CheckCircle2, Play, Pause, BookOpen,
+  PanelRightClose, PanelRightOpen, Loader2, Volume2, Search,
+  Globe, BookMarked, BarChart3, Square, Repeat, Zap,
+  Map, Compass, Mic, ScrollText, ClipboardList, SkipBack, SkipForward
+} from 'lucide-react'
+import { motion, AnimatePresence } from 'motion/react'
+
+const API_URL = import.meta.env.VITE_API_URL || ''
+const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2]
+const formatTime = (s: number) => {
+  if (!s || !isFinite(s)) return '0:00'
+  const m = Math.floor(s / 60)
+  const sec = Math.floor(s % 60)
+  return `${m}:${sec.toString().padStart(2, '0')}`
+}
+const NIVEL_BG: Record<string, string> = {
+  A1: 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300',
+  A2: 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300',
+  B1: 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300',
+  B2: 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300',
+  C1: 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300',
+}
+
+interface LessonsViewProps {
+  appState: any
+}
+
+interface PageDetail {
+  jpg_path: string | null
+  pdf_path: string | null
+  txt_path: string | null
+  ai_path: string | null
+  txt_content: string | null
+  transkription_content: string | null
+  ai_content: string | null
+  vocabulary: any[]
+  audio_tracks: any[]
+  audio_refs: any[]
+  transkriptionen: any[]
+  loesungen: any[]
+}
+
+export function LessonsView({ appState }: LessonsViewProps) {
+  const { selectedBook, setCurrentView, currentPdfIndex: currentPageIdx, setCurrentPdfIndex: setCurrentPageIdx } = appState
+
+  const [bookPages, setBookPages] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [lektionen, setLektionen] = useState<any[]>([])
+  const [pageDetail, setPageDetail] = useState<PageDetail | null>(null)
+  const [detailLoading, setDetailLoading] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [sidebarWidth, setSidebarWidth] = useState(380)
+  const [isDragging, setIsDragging] = useState(false)
+
+  const audioRef = useRef<HTMLAudioElement>(null)
+  const [playingTrack, setPlayingTrack] = useState<any>(null)
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [speed, setSpeed] = useState(1)
+  const [zoom, setZoom] = useState(1)
+
+  const handleWheel = useCallback((e: React.WheelEvent) => {
+    if (e.ctrlKey || e.metaKey) {
+      e.preventDefault()
+      const delta = e.deltaY > 0 ? -0.1 : 0.1
+      setZoom(z => Math.max(0.5, Math.min(3, z + delta)))
+    }
+  }, [])
+
+  const [lessonVocab, setLessonVocab] = useState<any[]>([])
+  const [lessonAudioPages, setLessonAudioPages] = useState<any[]>([])
+  const [lessonStats, setLessonStats] = useState<any[]>([])
+
+  const [loop, setLoop] = useState(false)
+  const [currentTime, setCurrentTime] = useState(0)
+  const [duration, setDuration] = useState(0)
+  const [showPlayerTranscription, setShowPlayerTranscription] = useState(false)
+
+  const [dictQuery, setDictQuery] = useState('')
+  const [dictResults, setDictResults] = useState<any[]>([])
+  const [dictLoading, setDictLoading] = useState(false)
+  const [verbQuery, setVerbQuery] = useState('')
+  const [verbResults, setVerbResults] = useState<any[]>([])
+  const [verbLoading, setVerbLoading] = useState(false)
+
+  // New sidebar features
+  const [contentMap, setContentMap] = useState<any[]>([])
+  const [pageIndex, setPageIndex] = useState<any>(null)
+  const [ocrSearchQuery, setOcrSearchQuery] = useState('')
+  const [ocrSearchResults, setOcrSearchResults] = useState<any[]>([])
+
+  const currentLektion = lektionen.find((l: any) => currentPageIdx + 1 >= l.page_min && currentPageIdx + 1 <= l.page_max)
+
+  useEffect(() => {
+    if (!selectedBook || !currentLektion) {
+      setLessonVocab([])
+      setLessonAudioPages([])
+      return
+    }
+    api.getFilteredVocabulary(selectedBook.id, { lektion: currentLektion.lektion })
+      .then(d => setLessonVocab(d.vocabulary || []))
+      .catch(() => setLessonVocab([]))
+    api.getPageAudio(selectedBook.id)
+      .then(d => setLessonAudioPages(d.pageAudio || []))
+      .catch(() => setLessonAudioPages([]))
+  }, [selectedBook?.id, currentLektion?.lektion])
+
+  useEffect(() => {
+    if (!selectedBook) return
+    api.getLessonStats(selectedBook.id)
+      .then(d => setLessonStats(d.lessons || []))
+      .catch(() => setLessonStats([]))
+  }, [selectedBook?.id])
+
+  const [sections, setSections] = useState<Record<string, boolean>>({
+    lessonVocab: true,
+    vocab: true,
+    audio: true,
+    transkription: false,
+    loesungen: false,
+    hoerordner: false,
+    ocr: false,
+    ki: false,
+    transkription_full: false,
+    lessonStats: false,
+    txtContent: false,
+    aiContent: false,
+    dictionary: false,
+    verbs: false,
+    contentBadges: true,
+    sectionJump: false,
+    minimap: false,
+    ocrSearch: false,
+  })
+
+  const toggleSection = (key: string) => setSections(prev => ({ ...prev, [key]: !prev[key] }))
+  const isOpen = (key: string) => sections[key] ?? false
+
+  const searchDict = useCallback(async (q: string) => {
+    if (!q.trim()) { setDictResults([]); return }
+    setDictLoading(true)
+    try {
+      const [vocabRes, dictRes] = await Promise.all([
+        fetch(`${API_URL}/api/vocab/search?q=${encodeURIComponent(q.trim())}`),
+        fetch(`${API_URL}/api/dictionary/search?q=${encodeURIComponent(q.trim())}`),
+      ])
+      const vocabData = vocabRes.ok ? (await vocabRes.json()).data || [] : []
+      const dictData = dictRes.ok ? (await dictRes.json()).data || [] : []
+      const combined = [...vocabData, ...dictData]
+      const seen = new Set()
+      const deduped = combined.filter((e: any) => {
+        const key = e.palabra || e.german_word || ''
+        if (!key || seen.has(key)) return false
+        seen.add(key)
+        return true
+      })
+      setDictResults(deduped.slice(0, 30))
+    } catch { setDictResults([]) }
+    finally { setDictLoading(false) }
+  }, [])
+
+  const searchVerbs = useCallback(async (q: string) => {
+    if (!q.trim()) { setVerbResults([]); return }
+    setVerbLoading(true)
+    try {
+      const r = await fetch(`${API_URL}/api/verbs/search?q=${encodeURIComponent(q.trim())}`)
+      if (!r.ok) { setVerbResults([]); return }
+      const d = await r.json()
+      setVerbResults(d.verbs || [])
+    } catch { setVerbResults([]) }
+    finally { setVerbLoading(false) }
+  }, [])
+
+  const runOcrSearch = useCallback(async () => {
+    if (!ocrSearchQuery.trim() || !selectedBook) return
+    const r = await fetch(`${API_URL}/api/book/ocr-search?book=${encodeURIComponent(selectedBook.id)}&q=${encodeURIComponent(ocrSearchQuery)}`)
+    const d = await r.json()
+    setOcrSearchResults(d.data || [])
+  }, [ocrSearchQuery, selectedBook?.id])
+
+  useEffect(() => {
+    if (!selectedBook) return
+    setLoading(true)
+    api.getLessons(selectedBook.id)
+      .then(data => {
+        setBookPages(data.pdfs || [])
+        setLektionen(data.lektionen || [])
+        setCurrentPageIdx(0)
+        setLoading(false)
+      })
+      .catch(() => {
+        setBookPages([])
+        setLoading(false)
+      })
+  }, [selectedBook?.id])
+
+  useEffect(() => {
+    if (!selectedBook || !bookPages.length) return
+    const page = bookPages[currentPageIdx]
+    if (!page) return
+    setDetailLoading(true)
+    fetch(`${API_URL}/api/page/detail?book=${encodeURIComponent(selectedBook.id)}&page=${page.page}`)
+      .then(r => r.json())
+      .then(data => {
+        setPageDetail(data)
+        setDetailLoading(false)
+      })
+      .catch(() => {
+        setPageDetail(null)
+        setDetailLoading(false)
+      })
+  }, [selectedBook?.id, currentPageIdx, bookPages])
+
+  // Fetch content map for the whole book
+  useEffect(() => {
+    if (!selectedBook) return
+    fetch(`${API_URL}/api/book/content-map?book=${encodeURIComponent(selectedBook.id)}`)
+      .then(r => r.json())
+      .then(d => setContentMap(d.data || []))
+      .catch(() => {})
+  }, [selectedBook?.id])
+
+  // Fetch per-page content index
+  useEffect(() => {
+    if (!selectedBook || !bookPages[currentPageIdx]) return
+    const pageNum = bookPages[currentPageIdx].page
+    fetch(`${API_URL}/api/page/content-index?book=${encodeURIComponent(selectedBook.id)}&page=${pageNum}`)
+      .then(r => r.json())
+      .then(d => setPageIndex(d.data || null))
+      .catch(() => {})
+  }, [selectedBook?.id, currentPageIdx, bookPages])
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        setCurrentPageIdx((p: number) => Math.max(0, p - 1))
+      } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        setCurrentPageIdx((p: number) => Math.min(bookPages.length - 1, p + 1))
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [bookPages.length, setCurrentPageIdx])
+
+  useEffect(() => {
+    const handleMouseUp = () => setIsDragging(false)
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDragging) return
+      const newWidth = Math.min(600, Math.max(280, window.innerWidth - e.clientX))
+      setSidebarWidth(newWidth)
+    }
+    window.addEventListener('mouseup', handleMouseUp)
+    window.addEventListener('mousemove', handleMouseMove)
+    return () => {
+      window.removeEventListener('mouseup', handleMouseUp)
+      window.removeEventListener('mousemove', handleMouseMove)
+    }
+  }, [isDragging])
+
+  const playTrack = useCallback((track: any) => {
+    if (!audioRef.current) return
+    const src = track.url || (track.path ? `${API_URL}${track.path}` : '')
+    if (!src) return
+    audioRef.current.src = src
+    audioRef.current.playbackRate = speed
+    audioRef.current.currentTime = 0
+    setCurrentTime(0)
+    setDuration(0)
+    audioRef.current.play().then(() => {
+      setIsPlaying(true)
+      setPlayingTrack(track)
+    }).catch(() => setIsPlaying(false))
+  }, [speed])
+
+  const togglePlayPause = useCallback(() => {
+    if (!audioRef.current) return
+    if (isPlaying) {
+      audioRef.current.pause()
+      setIsPlaying(false)
+    } else {
+      audioRef.current.play().catch(() => {})
+      setIsPlaying(true)
+    }
+  }, [isPlaying])
+
+  const cdGroups: Record<string, any[]> = {}
+  for (const t of pageDetail?.audio_tracks || []) {
+    const key = t.cd ? `CD ${t.cd}` : 'Audio'
+    if (!cdGroups[key]) cdGroups[key] = []
+    cdGroups[key].push(t)
+  }
+
+  if (!selectedBook) {
+    const books = appState.realBooks || []
+    const bookGradients = [
+      'from-emerald-500/10 to-emerald-600/5 border-emerald-200/50',
+      'from-blue-500/10 to-blue-600/5 border-blue-200/50',
+      'from-purple-500/10 to-purple-600/5 border-purple-200/50',
+      'from-amber-500/10 to-amber-600/5 border-amber-200/50',
+      'from-rose-500/10 to-rose-600/5 border-rose-200/50',
+      'from-cyan-500/10 to-cyan-600/5 border-cyan-200/50',
+    ]
+    const iconColors = ['text-emerald-600', 'text-blue-600', 'text-purple-600', 'text-amber-600', 'text-rose-600', 'text-cyan-600']
+    return (
+      <ScrollArea className="h-full">
+        <div className="max-w-5xl mx-auto px-6 py-10">
+          <div className="flex items-center gap-3 mb-6">
+            <BookOpen className="size-5 text-primary" />
+            <h2 className="text-lg font-bold">Wähle ein Buch</h2>
+            <Badge variant="outline" className="text-xs">{books.length} Bücher</Badge>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {books.map((book, i) => {
+              const shortName = book.name.split('/').pop() || book.name
+              const grad = bookGradients[i % bookGradients.length]
+              const iconColor = iconColors[i % iconColors.length]
+              return (
+                <motion.div
+                  key={book.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.04 }}
+                  whileHover={{ scale: 1.04, y: -3 }}
+                  whileTap={{ scale: 0.96 }}
+                  onClick={() => { appState.setSelectedBook(book); appState.setCurrentView('lessons') }}
+                  className="cursor-pointer"
+                >
+                  <Card className={`backdrop-blur-xl bg-gradient-to-br ${grad} shadow-lg hover:shadow-xl transition-all h-full`}>
+                    <CardContent className="p-3 flex flex-col gap-2">
+                      {book.coverUrl ? (
+                        <div className="relative w-full aspect-[3/4] rounded-md overflow-hidden bg-muted/30">
+                          <img src={book.coverUrl} alt={shortName} className="w-full h-full object-cover" loading="lazy" onError={(e) => { e.currentTarget.style.display = 'none' }} />
+                        </div>
+                      ) : (
+                        <div className="w-full aspect-[3/4] rounded-md bg-gradient-to-br from-muted/50 to-muted/80 flex items-center justify-center">
+                          <BookOpen className={`size-8 ${iconColor} opacity-50`} />
+                        </div>
+                      )}
+                      <p className="text-xs font-semibold truncate">{shortName}</p>
+                      <div className="flex flex-wrap gap-1">
+                        <Badge variant="secondary" className="text-[9px] px-1 py-0">{book.pdfCount} S.</Badge>
+                        {book.audioFileCount > 0 && <Badge variant="outline" className="text-[9px] px-1 py-0">{book.audioFileCount} Audio</Badge>}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              )
+            })}
+          </div>
+        </div>
+      </ScrollArea>
+    )
+  }
+  if (loading) return <div className="h-full flex items-center justify-center"><Loader2 className="size-8 animate-spin text-muted-foreground" /></div>
+  if (!bookPages.length) return <ScrollArea className="h-full"><div className="flex flex-col items-center justify-center py-20 text-muted-foreground"><BookOpen className="size-12 mb-4 opacity-50" /><p className="text-sm">Keine Seiten für dieses Buch gefunden</p></div></ScrollArea>
+
+  return (
+    <div className="h-full flex">
+      <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex items-center gap-2 px-4 py-2 border-b bg-background/80 backdrop-blur">
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <span className="text-sm font-medium truncate">{selectedBook.name.split('/').pop()}</span>
+            <Badge variant="secondary" className="text-xs shrink-0">S. {currentPageIdx + 1}/{bookPages.length}</Badge>
+            {currentLektion && <Badge variant="outline" className="text-xs shrink-0">Lektion {currentLektion.lektion}</Badge>}
+          </div>
+          <div className="flex items-center gap-1 shrink-0">
+            {lektionen.length > 0 && (
+              <select className="text-xs h-7 rounded border bg-background px-2" value={currentLektion?.lektion || ''} onChange={e => { const l = lektionen.find((x: any) => x.lektion === e.target.value); if (l) setCurrentPageIdx(l.page_min - 1) }}>
+                <option value="">Lektion</option>
+                {lektionen.map((l: any) => <option key={l.lektion} value={l.lektion}>Lektion {l.lektion}</option>)}
+              </select>
+            )}
+            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" disabled={currentPageIdx <= 0} onClick={() => setCurrentPageIdx(p => Math.max(0, p - 1))}><ChevronUp className="size-4" /></Button>
+            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" disabled={currentPageIdx >= bookPages.length - 1} onClick={() => setCurrentPageIdx(p => Math.min(bookPages.length - 1, p + 1))}><ChevronDown className="size-4" /></Button>
+            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => setSidebarOpen(!sidebarOpen)}>{sidebarOpen ? <PanelRightClose className="size-4" /> : <PanelRightOpen className="size-4" />}</Button>
+          </div>
+        </div>
+
+        <div data-lesson-page className="flex-1 overflow-auto bg-gray-100 dark:bg-gray-900 flex items-start justify-center p-2 sm:p-4" onWheel={handleWheel}>
+          {pageDetail?.jpg_path ? (
+            <div className="relative w-full max-w-4xl mx-auto">
+              <div className="sticky top-0 z-10 flex gap-1 bg-background/80 backdrop-blur rounded-lg p-1 mb-2 sm:absolute sm:top-2 sm:right-2 sm:mb-0">
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 min-h-0" onClick={() => setZoom(z => Math.max(0.5, z - 0.25))}><span className="text-sm font-bold">−</span></Button>
+                <span className="text-xs font-mono px-2 py-1.5">{Math.round(zoom * 100)}%</span>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 min-h-0" onClick={() => setZoom(z => Math.min(3, z + 0.25))}><span className="text-sm font-bold">+</span></Button>
+                <Button variant="ghost" size="sm" className="h-8 px-2 p-0 min-h-0 text-xs" onClick={() => setZoom(1)}>Reset</Button>
+              </div>
+              <img src={`/pages/${pageDetail.jpg_path.replace('/home/f/deutsch-app/pages/', '')}`} alt={`Seite ${currentPageIdx + 1}`}
+                className="shadow-lg rounded w-full h-auto transition-transform"
+                style={{ transform: `scale(${zoom})`, transformOrigin: 'top center' }}
+                loading="lazy" />
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
+              {detailLoading ? <Loader2 className="size-8 animate-spin mb-4" /> : <><FileText className="size-12 mb-4 opacity-50" /><p className="text-sm">Kein Bild verfügbar</p></>}
+            </div>
+          )}
+        </div>
+
+        <div className="border-t bg-background/80 backdrop-blur px-2 sm:px-4 py-2">
+          <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto">
+            {Array.from({ length: bookPages.length }, (_, i) => (
+              <button key={i} onClick={() => setCurrentPageIdx(i)} className={`shrink-0 w-8 h-8 text-xs rounded font-mono transition-colors relative ${i === currentPageIdx ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'}`}>
+                {bookPages[i].page}
+                {(pageDetail?.audio_refs?.length || 0) > 0 && i === currentPageIdx && <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-blue-500 rounded-full" />}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <AnimatePresence>
+        {sidebarOpen && (
+          <motion.div data-lesson-sidebar initial={{ width: 0, opacity: 0 }} animate={{ width: sidebarWidth, opacity: 1 }} exit={{ width: 0, opacity: 0 }} transition={{ duration: 0.15 }}
+            className="relative border-l bg-background/95 backdrop-blur flex flex-col overflow-hidden max-md:fixed max-md:inset-0 max-md:z-50 max-md:bg-background">
+            <div className="absolute left-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-primary/50 active:bg-primary transition-colors z-10 max-md:hidden" onMouseDown={() => setIsDragging(true)} />
+            <div className="flex items-center justify-between p-2 border-b md:hidden">
+              <span className="text-xs font-medium">Seitendetails</span>
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 min-h-0" onClick={() => setSidebarOpen(false)}><span className="text-lg">✕</span></Button>
+            </div>
+            <ScrollArea className="flex-1" showScrollbar={true}>
+              <div className="p-4 space-y-4">
+
+                {/* ── Now Playing ── */}
+                {playingTrack && (
+                  <div className="space-y-2">
+                    <button onClick={() => toggleSection('player')} className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground w-full text-left">
+                      {isOpen('player') ? <ChevronDown className="size-3" /> : <ChevronRight className="size-3" />} <Volume2 className="size-3" /> Jetzt spielt
+                    </button>
+                    {isOpen('player') && (
+                      <div className="p-3 rounded bg-muted/50 space-y-3">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="text-[9px]">{playingTrack.cd ? `CD ${playingTrack.cd}` : ''} T{playingTrack.track}</Badge>
+                          <span className="text-xs font-medium truncate">{playingTrack.name}</span>
+                        </div>
+
+                        {/* Play/Pause/Stop row */}
+                        <div className="flex items-center gap-2">
+                          <button onClick={() => { if (isPlaying) { audioRef.current?.pause() } else { audioRef.current?.play().catch(() => {}) } }}
+                            className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0">
+                            {isPlaying ? <Pause className="size-4" /> : <Play className="size-4 ml-0.5" />}
+                          </button>
+                          <button onClick={() => { if (audioRef.current) { audioRef.current.pause(); audioRef.current.currentTime = 0; setIsPlaying(false); setCurrentTime(0) } }}
+                            className="w-7 h-7 rounded-full bg-muted-foreground/20 text-muted-foreground hover:bg-muted-foreground/30 flex items-center justify-center shrink-0" title="Stop">
+                            <Square className="size-3" />
+                          </button>
+                          <button onClick={() => setLoop(!loop)}
+                            className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${loop ? 'bg-accent-warm/20 text-accent-warm' : 'text-muted-foreground hover:bg-muted'}`} title="Wiederholen">
+                            <Repeat className="size-3" />
+                          </button>
+                          <div className="flex-1" />
+                          <span className="text-[9px] font-mono text-muted-foreground">{formatTime(currentTime)} / {formatTime(duration)}</span>
+                        </div>
+
+                        {/* Progress bar */}
+                        <input type="range" min={0} max={duration || 0} value={currentTime}
+                          onChange={e => { const v = parseFloat(e.target.value); if (audioRef.current) { audioRef.current.currentTime = v; setCurrentTime(v) } }}
+                          className="w-full h-1 appearance-none bg-muted-foreground/20 rounded-full cursor-pointer accent-primary [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary" />
+
+                        {/* Speed control */}
+                        <div className="flex items-center gap-1">
+                          <span className="text-[9px] text-muted-foreground">Geschw.:</span>
+                          {SPEEDS.map(s => (
+                            <button key={s} onClick={() => { setSpeed(s); if (audioRef.current) audioRef.current.playbackRate = s }}
+                              className={`text-[9px] px-1.5 py-0.5 rounded ${speed === s ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted'}`}>{s}x</button>
+                          ))}
+                        </div>
+
+                        {/* Transcription toggle */}
+                        {(playingTrack.transcription_content || playingTrack.translation_content) && (
+                          <>
+                            <button onClick={() => setShowPlayerTranscription(!showPlayerTranscription)}
+                              className="flex items-center gap-1 text-[9px] text-muted-foreground hover:text-foreground">
+                              <FileText className="size-3" /> {showPlayerTranscription ? 'Transkription ausblenden' : 'Transkription anzeigen'}
+                            </button>
+                            {showPlayerTranscription && (
+                              <div className="space-y-2 text-xs border-t border-border/40 pt-2">
+                                {playingTrack.transcription_content && (
+                                  <div className="space-y-1">
+                                    <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider">Deutsch</p>
+                                    <p className="whitespace-pre-wrap text-[11px] leading-relaxed">{playingTrack.transcription_content}</p>
+                                  </div>
+                                )}
+                                {playingTrack.translation_content && (
+                                  <div className="space-y-1 pt-1 border-t border-border/30">
+                                    <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider">English</p>
+                                    <p className="whitespace-pre-wrap text-[11px] leading-relaxed">{playingTrack.translation_content}</p>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* ── Quick Dictionary ── */}
+                <div className="space-y-2">
+                  <button onClick={() => toggleSection('dictionary')} className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground w-full text-left">
+                    {isOpen('dictionary') ? <ChevronDown className="size-3" /> : <ChevronRight className="size-3" />} <BookOpen className="size-3" /> Wörterbuch
+                  </button>
+                  {isOpen('dictionary') && (
+                    <div className="space-y-2">
+                      <div className="flex gap-1">
+                        <Input value={dictQuery} onChange={e => setDictQuery(e.target.value)}
+                          placeholder="Wort suchen..." className="h-7 text-xs flex-1" onKeyDown={e => { if (e.key === 'Enter') searchDict(dictQuery) }} />
+                        <Button variant="outline" size="sm" className="h-7 text-xs shrink-0" onClick={() => searchDict(dictQuery)} disabled={dictLoading}>
+                          {dictLoading ? <Loader2 className="size-3 animate-spin" /> : <Search className="size-3" />}
+                        </Button>
+                      </div>
+                      {dictResults.length > 0 && (
+                        <div className="max-h-48 overflow-y-auto space-y-1">
+                          {dictResults.map((entry: any, i: number) => (
+                            <div key={i} className="text-xs p-2 rounded bg-muted/30 space-y-0.5">
+                              <div className="flex items-center gap-1 flex-wrap">
+                                <span className="font-medium">{entry.artikel ? `${entry.artikel} ` : ''}{entry.palabra || entry.wort}</span>
+                                {entry.wortart && <Badge variant="outline" className="text-[8px] px-1 py-0">{entry.wortart}</Badge>}
+                                {entry.nivel && <span className={`text-[8px] px-1 py-0 rounded ${NIVEL_BG[entry.nivel] || ''}`}>{entry.nivel}</span>}
+                              </div>
+                              <span className="text-muted-foreground">{entry.traduccion || entry.spanish || ''}</span>
+                              {entry.english && <span className="text-[10px] text-muted-foreground block">EN: {entry.english}</span>}
+                              {entry.kontext && <span className="text-[10px] text-muted-foreground block italic">"{entry.kontext}"</span>}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {dictQuery && !dictLoading && dictResults.length === 0 && (
+                        <p className="text-[10px] text-muted-foreground">Keine Ergebnisse für "{dictQuery}"</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* ── Quick Verbs ── */}
+                <div className="space-y-2">
+                  <button onClick={() => toggleSection('verbs')} className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground w-full text-left">
+                    {isOpen('verbs') ? <ChevronDown className="size-3" /> : <ChevronRight className="size-3" />} <Zap className="size-3" /> Verben
+                  </button>
+                  {isOpen('verbs') && (
+                    <div className="space-y-2">
+                      <div className="flex gap-1">
+                        <Input value={verbQuery} onChange={e => setVerbQuery(e.target.value)}
+                          placeholder="Verb suchen..." className="h-7 text-xs flex-1" onKeyDown={e => { if (e.key === 'Enter') searchVerbs(verbQuery) }} />
+                        <Button variant="outline" size="sm" className="h-7 text-xs shrink-0" onClick={() => searchVerbs(verbQuery)} disabled={verbLoading}>
+                          {verbLoading ? <Loader2 className="size-3 animate-spin" /> : <Search className="size-3" />}
+                        </Button>
+                      </div>
+                      {verbResults.length > 0 && (
+                        <div className="max-h-48 overflow-y-auto space-y-1">
+                          {verbResults.map((verb: any, i: number) => (
+                            <div key={i} className="text-xs p-2 rounded bg-muted/30 space-y-0.5">
+                              <div className="flex items-center gap-1 flex-wrap">
+                                <span className="font-medium">{verb.infinitiv || verb.german || ''}</span>
+                                {verb.rank && <Badge variant="outline" className="text-[8px] px-1 py-0">#{verb.rank}</Badge>}
+                              </div>
+                              <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 text-[10px] text-muted-foreground">
+                                {verb.english && <span>EN: {verb.english}</span>}
+                                {verb.spanish && <span>ES: {verb.spanish}</span>}
+                                {verb.praesens_ich && <span>ich {verb.praesens_ich}</span>}
+                                {verb.praesens_er && <span>er {verb.praesens_er}</span>}
+                                {verb.praeteritum && <span>Prät.: {verb.praeteritum}</span>}
+                                {verb.partizip_ii && <span>Perf.: {verb.partizip_ii}</span>}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {verbQuery && !verbLoading && verbResults.length === 0 && (
+                        <p className="text-[10px] text-muted-foreground">Keine Verben gefunden für "{verbQuery}"</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* ── TXT Content (OCR) ── */}
+                {pageDetail?.txt_content && (
+                  <div className="space-y-2">
+                    <button onClick={() => toggleSection('txtContent')} className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground w-full text-left">
+                      {isOpen('txtContent') ? <ChevronDown className="size-3" /> : <ChevronRight className="size-3" />} <FileText className="size-3" /> OCR Text
+                    </button>
+                    {isOpen('txtContent') && (
+                      <div className="max-h-48 overflow-y-auto p-2 rounded bg-muted/30">
+                        <p className="text-[11px] whitespace-pre-wrap leading-relaxed font-mono text-muted-foreground">{pageDetail.txt_content}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* ── AI Content (Annotations) ── */}
+                {pageDetail?.ai_content && (
+                  <div className="space-y-2">
+                    <button onClick={() => toggleSection('aiContent')} className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground w-full text-left">
+                      {isOpen('aiContent') ? <ChevronDown className="size-3" /> : <ChevronRight className="size-3" />} <FileText className="size-3 text-accent-warm" /> AI Annotationen
+                    </button>
+                    {isOpen('aiContent') && (
+                      <div className="max-h-48 overflow-y-auto p-2 rounded bg-muted/30">
+                        <p className="text-[11px] whitespace-pre-wrap leading-relaxed text-muted-foreground">{pageDetail.ai_content}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* ── Audio refs ── */}
+                {pageDetail?.audio_refs && pageDetail.audio_refs.length > 0 && (
+                  <div className="space-y-2">
+                    <button onClick={() => toggleSection('audio')} className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground w-full text-left">
+                      {isOpen('audio') ? <ChevronDown className="size-3" /> : <ChevronRight className="size-3" />} <Headphones className="size-3" /> Hörübungen <Badge variant="outline" className="text-[10px] ml-auto">{pageDetail.audio_refs.length}</Badge>
+                    </button>
+                    {isOpen('audio') && pageDetail.audio_refs.map((ref: any, i: number) => (
+                      <div key={i} className="p-2 rounded bg-muted/50 space-y-1">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="text-[10px]">CD {ref.cd_num} T{ref.track_num}</Badge>
+                          <button onClick={() => { const track = pageDetail.audio_tracks?.find((t: any) => t.cd === ref.cd_num && t.track === ref.track_num); if (track) playTrack(track) }}
+                            className="w-6 h-6 rounded-full bg-primary flex items-center justify-center shrink-0">
+                            <Play className="size-3 text-white ml-0.5" />
+                          </button>
+                        </div>
+                        {ref.exercise_text && <p className="text-xs text-muted-foreground">{ref.exercise_text}</p>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* ── Lesson Stats ── */}
+                {lessonStats.length > 0 && (
+                  <div className="space-y-2">
+                    <button onClick={() => toggleSection('lessonStats')} className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground w-full text-left">
+                      {isOpen('lessonStats') ? <ChevronDown className="size-3" /> : <ChevronRight className="size-3" />} <BarChart3 className="size-3" /> Lektions-Statistiken
+                    </button>
+                    {isOpen('lessonStats') && (
+                      <div className="space-y-1 max-h-48 overflow-y-auto">
+                        {lessonStats.map((ls: any, i: number) => (
+                          <div key={i} className={`flex items-center gap-2 text-xs p-1.5 rounded ${currentLektion?.lektion === ls.lektion ? 'bg-accent-warm/10 ring-1 ring-accent-warm/30' : 'bg-muted/30'}`}>
+                            <Badge variant="outline" className="text-[9px] px-1">L{ls.lektion}</Badge>
+                            <span className="font-mono">{ls.vocab_count} Wörter</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* ── Lesson Vocabulary ── */}
+                {currentLektion && lessonVocab.length > 0 && (
+                  <div className="space-y-2">
+                    <button onClick={() => toggleSection('lessonVocab')} className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground w-full text-left">
+                      {isOpen('lessonVocab') ? <ChevronDown className="size-3" /> : <ChevronRight className="size-3" />} <BookMarked className="size-3 text-accent-warm" /> Lektion {currentLektion.lektion} — Vokabeln
+                      <Badge className="text-[9px] ml-auto bg-accent-warm/20 text-accent-warm-foreground">{lessonVocab.length}</Badge>
+                    </button>
+                    {isOpen('lessonVocab') && (
+                      <div className="max-h-60 overflow-y-auto space-y-1">
+                        {lessonVocab.map((v: any, i: number) => (
+                          <div key={i} className="text-xs p-2 rounded bg-muted/50 flex items-start gap-2">
+                            <div className="flex-1 min-w-0">
+                              <span className="font-medium">{v.artikel ? <span className="text-emerald-600">{v.artikel} </span> : ''}{v.wort || v.palabra}</span>
+                              <span className="text-muted-foreground"> — {v['übersetzung_es'] || v.traduccion || '—'}</span>
+                              {v.english && <span className="text-[10px] text-muted-foreground block truncate">EN: {v.english}</span>}
+                            </div>
+                            <div className="flex gap-1 shrink-0">
+                              {v.nivel && <Badge className={`text-[9px] px-1 py-0 ${NIVEL_BG[v.nivel] || ''}`}>{v.nivel}</Badge>}
+                              {v.seite && <Badge variant="outline" className="text-[9px] px-1 py-0">S.{v.seite}</Badge>}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* ── Page vocabulary ── */}
+                {pageDetail?.vocabulary && pageDetail.vocabulary.length > 0 && (
+                  <div className="space-y-2">
+                    <button onClick={() => toggleSection('vocab')} className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground w-full text-left">
+                      {isOpen('vocab') ? <ChevronDown className="size-3" /> : <ChevronRight className="size-3" />} <GraduationCap className="size-3" /> Seite {currentPageIdx + 1} — Vokabeln
+                    </button>
+                    {isOpen('vocab') && pageDetail.vocabulary.map((v: any, i: number) => (
+                      <div key={i} className="text-xs p-2 rounded bg-muted/50 flex items-start gap-2">
+                        <span className="font-medium">{v.artikel ? `${v.artikel} ` : ''}{v.palabra}</span> — {v.traduccion}
+                        {v.nivel && <Badge className={`text-[9px] px-1 py-0 ml-auto ${NIVEL_BG[v.nivel] || ''}`}>{v.nivel}</Badge>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* ── Transcriptions ── */}
+                {pageDetail?.transkriptionen && pageDetail.transkriptionen.length > 0 && (
+                  <div className="space-y-2">
+                    <button onClick={() => toggleSection('transkription')} className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground w-full text-left">
+                      {isOpen('transkription') ? <ChevronDown className="size-3" /> : <ChevronRight className="size-3" />} <FileText className="size-3" /> Transkription Fragmente
+                    </button>
+                    {isOpen('transkription') && pageDetail.transkriptionen.map((t: any, i: number) => <div key={i} className="text-xs p-2 rounded bg-muted/50"><p className="whitespace-pre-wrap">{t.inhalt}</p></div>)}
+                  </div>
+                )}
+
+                {/* ── Answers ── */}
+                {pageDetail?.loesungen && pageDetail.loesungen.length > 0 && (
+                  <div className="space-y-2">
+                    <button onClick={() => toggleSection('loesungen')} className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground w-full text-left">
+                      {isOpen('loesungen') ? <ChevronDown className="size-3" /> : <ChevronRight className="size-3" />} <CheckCircle2 className="size-3" /> Lösungen
+                    </button>
+                    {isOpen('loesungen') && pageDetail.loesungen.map((l: any, i: number) => <div key={i} className="text-xs p-2 rounded bg-green-50">{l.inhalt}</div>)}
+                  </div>
+                )}
+
+                {/* ── KI Analyse ── */}
+                {pageDetail?.audio_tracks && pageDetail.audio_tracks.some((t: any) => t.transcription_content) && (
+                  <div className="space-y-2">
+                    <button onClick={() => toggleSection('ki')} className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground w-full text-left">
+                      {isOpen('ki') ? <ChevronDown className="size-3" /> : <ChevronRight className="size-3" />} <FileText className="size-3" /> KI Analyse
+                    </button>
+                    {isOpen('ki') && pageDetail.audio_tracks.filter((t: any) => t.transcription_content).map((t: any, i: number) => (
+                      <div key={i} className="text-xs p-3 rounded bg-muted/50 space-y-2">
+                        <div className="flex items-center gap-2"><Badge variant="outline" className="text-[10px]">CD {t.cd} T{t.track}</Badge><span className="font-medium truncate">{t.name}</span></div>
+                        <div className="space-y-1">
+                          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Deutsch</p>
+                          <p className="whitespace-pre-wrap">{t.transcription_content}</p>
+                        </div>
+                        {t.translation_content && (
+                          <div className="space-y-1 pt-1 border-t border-border/40">
+                            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">English</p>
+                            <p className="whitespace-pre-wrap">{t.translation_content}</p>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+              </div>
+            </ScrollArea>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <audio ref={audioRef} loop={loop}
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
+        onTimeUpdate={() => { if (audioRef.current) setCurrentTime(audioRef.current.currentTime) }}
+        onLoadedMetadata={() => { if (audioRef.current) setDuration(audioRef.current.duration) }}
+        onEnded={() => { if (!loop) { setIsPlaying(false); setPlayingTrack(null); setCurrentTime(0) } }}
+        onError={() => setIsPlaying(false)}
+      />
+    </div>
+  )
+}

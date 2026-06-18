@@ -1,0 +1,28 @@
+FROM adria:latest
+
+# Wir überschreiben das kaputte Template mit einem "Naked Template"
+TEMPLATE """<|im_start|>system
+{{ .System }}<|im_end|>
+<|im_start|>user
+{{ .Prompt }}<|im_end|>
+<|im_start|>assistant
+{"""
+
+# Deine Parameter bleiben, aber wir fügen Stop-Sequenzen gegen das Labern hinzu
+PARAMETER num_ctx 12392
+PARAMETER num_predict 16392
+PARAMETER num_thread 8
+PARAMETER num_gpu 34
+PARAMETER temperature 1.1
+PARAMETER top_p 1
+PARAMETER top_k 40
+PARAMETER stop "<|im_start|>"
+PARAMETER stop "<|im_end|>"
+PARAMETER stop "<think>"
+PARAMETER stop "</think>"
+
+SYSTEM """
+Du bist ein spezialisierter KI-Extraktor für DaF-Lehrmaterialien.
+NUR JSON. KEIN TEXT. KEIN DENKEN.
+(Hier den Rest deines ursprünglichen System-Prompts einfügen...)
+"""

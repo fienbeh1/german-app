@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'motion/react'
 import { useAppState } from './hooks/useAppState'
+import { useEffect } from 'react'
 import { DashboardView } from './views/DashboardView'
 import { LessonsView } from './views/LessonsView'
 import { VocabularyView } from './views/VocabularyView'
@@ -33,6 +34,17 @@ import { Seitendetails } from './components/Seitendetails'
 export default function App() {
   const appState = useAppState()
   const { audioRef, theme, setTheme, loading, currentView, setCurrentView, selectedBook, setSelectedBook, realBooks, bookSearch, setBookSearch, lessonData, currentPdfIndex, setCurrentPdfIndex, lektionen, searchQuery, setSearchQuery, verbSearch, setVerbSearch, chatOpen, setChatOpen, chatInput, setChatInput, chatMessages, chatLoading, sendChat, audioProgress, audioDuration, setAudioProgress, setAudioDuration, setIsPlaying, setPlayingAudio, backendOnline, errorMessage, setErrorMessage, infoPanelOpen, setInfoPanelOpen, pageDetail, setPageDetail, playingTrack, setPlayingTrack } = appState
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
+        e.preventDefault()
+        setInfoPanelOpen(!infoPanelOpen)
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [infoPanelOpen, setInfoPanelOpen])
 
   if (loading) {
     return (
